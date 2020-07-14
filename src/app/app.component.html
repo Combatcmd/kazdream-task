@@ -1,0 +1,18 @@
+<input type="number" [(ngModel)]='startYear' (keyup.enter)="endYear && getAll(startYear,endYear)"/>
+<input type="number" [(ngModel)]='endYear' (keyup.enter)="startYear && getAll(startYear,endYear)"/>
+
+<div style="width: 500px; height: 250px;">
+  <canvas
+    baseChart
+    [datasets]="barChartData"
+    [labels]="barChartLabels"
+    [options]="barChartOptions"
+    [legend]="barChartLegend"
+    [chartType]="barChartType"
+  >
+  </canvas>
+</div>
+
+<button (click)="getAll(startYear,endYear)">
+    qwe
+</button>

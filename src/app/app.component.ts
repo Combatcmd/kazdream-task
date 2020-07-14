@@ -1,32 +1,77 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { TemperatureService } from './temperature.service';
+import { ChartDataSets, ChartOptions } from 'chart.js';
+import { Color, BaseChartDirective, Label } from 'ng2-charts';
+import * as _ from 'lodash';
 
 @Component({
   selector: 'app-root',
-  template: `
-    <!--The content below is only a placeholder and can be replaced.-->
-    <div style="text-align:center" class="content">
-      <h1>
-        Welcome to {{title}}!
-      </h1>
-      <span style="display: block">{{ title }} app is running!</span>
-      <img width="300" alt="Angular Logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg==">
-    </div>
-    <h2>Here are some links to help you start: </h2>
-    <ul>
-      <li>
-        <h2><a target="_blank" rel="noopener" href="https://angular.io/tutorial">Tour of Heroes</a></h2>
-      </li>
-      <li>
-        <h2><a target="_blank" rel="noopener" href="https://angular.io/cli">CLI Documentation</a></h2>
-      </li>
-      <li>
-        <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
-      </li>
-    </ul>
-    
-  `,
-  styles: []
+  templateUrl: './app.component.html',
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'kd-task';
+
+  barChartOptions = {
+    scaleShowVerticalLines: false,
+    responsive: true,
+  };
+  barChartLabels: any[];
+  barChartType = 'line';
+  barChartLegend = true;
+  barChartData = [
+    { data: [], label: 'Temperature' },
+    { data: [], label: 'Precipitation' },
+  ];
+
+  temperatures: any;
+  precipitation: any;
+
+  startYear: string
+  endYear: string
+
+  constructor(private t: TemperatureService) {}
+
+  ngOnInit() {
+    this.getAllTemperatures();
+    this.getAllPrecipitation()
+  }
+
+  getAllTemperatures(start?, end?) {
+    this.t.getAllTemperatures().subscribe((res) => {
+      this.temperatures = res;
+      this.barChartLabels = this.temperatures.map((item) => item.t);
+      this.barChartData[0]['data'] = this.temperatures.map((item) => item.v);
+      if (start && end) {
+        let yearList = _.range(+start, +end + 1);
+        this.barChartLabels = this.barChartLabels.filter((year) =>
+          yearList.includes(+year.slice(0, 4))
+        );
+        this.barChartData[0]['data'] = this.temperatures
+          .filter(({ t }) => yearList.includes(+t.slice(0, 4)))
+          .map((item) => item.v);
+      }
+    });
+  }
+
+  getAllPrecipitation(start?, end?) {
+    this.t.getAllPrecipitation().subscribe((res) => {
+      this.precipitation = res;
+      this.barChartLabels = this.precipitation.map((item) => item.t);
+      this.barChartData[1]['data'] = this.precipitation.map((item) => item.v);
+      if (start && end) {
+        let yearList = _.range(+start, +end + 1);
+        this.barChartLabels = this.barChartLabels.filter((year) =>
+          yearList.includes(+year.slice(0, 4))
+        );
+        this.barChartData[1]['data'] = this.precipitation
+          .filter(({ t }) => yearList.includes(+t.slice(0, 4)))
+          .map((item) => item.v);
+      }
+    });
+  }
+
+  getAll(start, end) {
+    this.getAllTemperatures(start, end);
+    this.getAllPrecipitation(start, end)
+  }
 }
